@@ -1,0 +1,72 @@
+================================================== 2018-03-09 10:57:18 ==================================================
+
+Gen.  | Epochs: 30          Words: 100          Length: 50          
+
+Embed | embed_dim: 300      
+
+Conv1 | filters: 256        kernel: 3           stride: 1           padding: VALID      
+
+Caps1 | num_output: 32      vec_len: 8          type: CONV          routing: False      kernel: 3           stride: 1           
+
+Caps2 | num_output: 1       vec_len: 16         type: FC            routing: True       
+
+Res.  | Loss: 0.534         Acc: 1.00           
+
+========================================================== end ==========================================================
+
+
+
+================================================== 2018-03-09 11:28:22 ==================================================
+
+Gen.  | Epochs: 10          Words: 3000         Length: 500         Routing: 1          
+
+Embed | embed_dim: 150      
+
+Conv1 | filters: 256        kernel: 3           stride: 1           padding: VALID      
+
+Caps1 | num_output: 32      vec_len: 8          type: CONV          routing: False      kernel: 3           stride: 1           
+
+Caps2 | num_output: 1       vec_len: 16         type: FC            routing: True       
+
+Res.  | Loss: 0.543         Acc: 0.99           
+
+========================================================== end ==========================================================
+
+
+
+================================================== 2018-03-09 12:26:30 ==================================================
+
+Gen.  | Epochs: 1           Words: 3000         Length: 500         Routing: 1          
+
+Embed | embed_dim: 150      
+
+Conv1 | filters: 256        kernel: 3           stride: 1           padding: VALID      
+
+Caps1 | num_output: 32      vec_len: 8          type: CONV          routing: False      kernel: 3           stride: 1           
+
+Caps2 | num_output: 1       vec_len: 16         type: FC            routing: True       
+
+Res.  | Loss: 0.515         Acc: 0.99           Test Acc: 0.84      
+
+========================================================== end ==========================================================
+
+
+
+================================================== 2018-03-15 22:11:54 ==================================================
+Gen.  | Epochs: 1           Words: 3000         Length: 500         Routing: 1          
+Embed | embed_dim: 150      
+Conv1 | filters: 256        kernel: 3           stride: 1           padding: VALID      
+Caps1 | num_output: 32      vec_len: 8          type: CONV          routing: False      kernel: 3           stride: 1           
+Caps2 | num_output: 2       vec_len: 16         type: FC            routing: True       
+Res.  | Loss: 0.603         Acc: 0.84           Test Acc: 0.84      
+========================================================== end ==========================================================
+
+================================================== 2018-03-16 10:12:53 ==================================================
+Gen.  | Epochs: 10           Words: 3000         Length: 500         Routing: 3          
+Embed | embed_dim: 150      
+Conv1 | filters: 256        kernel: 3           stride: 1           padding: VALID      
+Caps1 | num_output: 32      vec_len: 8          type: CONV          routing: False      kernel: 3           stride: 1           
+Caps2 | num_output: 2       vec_len: 16         type: FC            routing: True       
+Res.  | Loss: 0.540         Acc: 0.99           Test Acc: 0.8457    
+========================================================== end ==========================================================
+
