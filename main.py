@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 from tqdm import tqdm
 from config import cfg
-from utils import load_imdb, record
+from utils import load_imdb, load_ag, record
 from model import CapsNet
 
 def save_to():
@@ -47,12 +47,15 @@ def save_to():
 		return f_test_acc
 
 
-def train(model, supervisor, num_label):
+def train(model, supervisor):
 	losses = []
 	accs = []
 	val_accs = []
 
-	trX, trY, num_tr_batch, valX, valY, num_val_batch = load_imdb(cfg.batch_size, cfg.words, cfg.length, is_training=True)
+	if cfg.dataset == 'imdb':
+		trX, trY, num_tr_batch, valX, valY, num_val_batch = load_imdb(cfg.batch_size, cfg.words, cfg.length, is_training=True)
+	elif cfg.dataset == 'ag':
+		trX, trY, num_tr_batch, valX, valY, num_val_batch = load_ag(cfg.batch_size, cfg.length, is_training=True)
 
 	f_loss, f_train_acc, f_val_acc = save_to()
 	config = tf.ConfigProto()
@@ -128,8 +131,11 @@ def train(model, supervisor, num_label):
 		return losses[-1], accs[-1]
 
 
-def evaluation(model, supervisor, num_label):
-	teX, teY, num_te_batch = load_imdb(cfg.batch_size, cfg.words, cfg.length, is_training=False)
+def evaluation(model, supervisor):
+	if cfg.dataset == 'imdb':
+		teX, teY, num_te_batch = load_imdb(cfg.batch_size, cfg.words, cfg.length, is_training=False)
+	elif cfg.dataset == 'ag':
+		teX, teY, num_te_batch = load_ag(cfg.batch_size, cfg.length, is_training=False)
 
 	cfg.is_training = False
 	f_test_acc = save_to()
@@ -156,20 +162,19 @@ def evaluation(model, supervisor, num_label):
 
 def main(_):
 	tf.logging.info('Loading Graph...')
-	num_label = 1
 	model = CapsNet()
 	tf.logging.info('Graph loaded')
 
 	sv = tf.train.Supervisor(graph=model.graph, logdir=cfg.logdir, save_model_secs=0)
 
 	if not cfg.is_training:
-		_ = evaluation(model, sv, num_label)
+		_ = evaluation(model, sv)
 
 	else:
 		tf.logging.info('Start is_training...')
-		loss, acc = train(model, sv, num_label)
+		loss, acc = train(model, sv)
 		tf.logging.info('Training done')
-		test_acc = evaluation(model, sv, num_label)
+		test_acc = evaluation(model, sv)
 		record(loss, acc, test_acc)
 
 

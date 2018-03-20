@@ -41,7 +41,7 @@ flags.DEFINE_integer('caps1_kernel', 2, 'kernel size (ONLY FOR CONV TYPE)')
 flags.DEFINE_integer('caps1_stride', 1, 'stride (ONLY FOR CONV TYPE)')
 
 # second capsule layer (output)
-flags.DEFINE_integer('caps2_output', 2, 'number of capsules in the second capsule layer')
+flags.DEFINE_integer('caps2_output', 4, 'number of capsules in the second capsule layer')
 flags.DEFINE_integer('caps2_len', 4, 'vector length of second capsule layer')
 flags.DEFINE_string('caps2_type', 'FC', 'type of capsule layer [\'CONV\', \'FC\']')
 flags.DEFINE_boolean('caps2_routing', True, 'boolean to use routing or not')

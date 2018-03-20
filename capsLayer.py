@@ -70,11 +70,11 @@ def routing(input, b_IJ):
 		v_j represents vector output of capsule j in layer l+1
 	'''
 
-	W = tf.get_variable('Weight', shape=(1,7952,2,8,16), dtype=tf.float32,
+	W = tf.get_variable('Weight', shape=(1,7952,4,8,16), dtype=tf.float32,     # * **
 						initializer=tf.random_normal_initializer(stddev=cfg.stddev))
 	biases = tf.get_variable('bias', shape=(1,1,1,16,1))
 
-	input = tf.tile(input, [1,1,2,1,1])
+	input = tf.tile(input, [1,1,4,1,1])    # **
 	W = tf.tile(W, [cfg.batch_size,1,1,1,1])
 
 	u_hat = tf.matmul(W, input, transpose_a=True)
@@ -96,7 +96,7 @@ def routing(input, b_IJ):
 				s_J = tf.reduce_sum(s_J, axis=1, keep_dims=True) + biases
 				v_J = squash(s_J)
 
-				v_J_tiled = tf.tile(v_J, [1,7952,1,1,1])
+				v_J_tiled = tf.tile(v_J, [1,7952,1,1,1])   #*
 				u_produce_v = tf.matmul(u_hat_stopped, v_J_tiled, transpose_a=True)
 
 				b_IJ += u_produce_v
