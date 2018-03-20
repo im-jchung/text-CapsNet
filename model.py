@@ -19,7 +19,7 @@ class CapsNet(object):
 				self.summary_()
 
 				self.global_step = tf.Variable(0, name='global_step', trainable=False)
-				self.optimizer = tf.train.AdamOptimizer()
+				self.optimizer = tf.train.AdamOptimizer(learning_rate=0.001)
 				self.train_op = self.optimizer.minimize(self.total_loss, global_step=self.global_step)
 			else:
 				self.X = tf.placeholder(tf.float32, shape=(cfg.batch_size, cfg.length))
@@ -65,7 +65,8 @@ class CapsNet(object):
 		#L_k = tf.reduce_sum(self.v_j, axis=[1,2,3])
 		logits = tf.squeeze(self.v_j)
 		self.Y = tf.cast(self.Y, tf.float32)
-		self.total_loss = tf.nn.sigmoid_cross_entropy_with_logits(logits=logits, labels=self.Y)
+		#self.total_loss = tf.nn.sigmoid_cross_entropy_with_logits(logits=logits, labels=self.Y)
+		self.total_loss = tf.losses.softmax_cross_entropy(onehot_labels=self.Y, logits=logits)
 		self.total_loss = tf.reduce_mean(self.total_loss)
 
 	def summary_(self):

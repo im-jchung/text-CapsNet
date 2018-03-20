@@ -27,22 +27,22 @@ flags.DEFINE_integer('length', 500, 'max length of each review (words)')
 flags.DEFINE_integer('embed_dim', 150, 'vector length of embedded words')
 
 # first conv layer
-flags.DEFINE_integer('conv1_filters', 256, 'number of filters used in initial conv layer')
+flags.DEFINE_integer('conv1_filters', 128, 'number of filters used in initial conv layer')
 flags.DEFINE_integer('conv1_kernel', 3, 'kernel size for initial conv layer')
 flags.DEFINE_integer('conv1_stride', 1, 'stride for initial conv layer')
 flags.DEFINE_string('conv1_padding', 'VALID', 'padding for initial conv layer')
 
 # first capsule layer
-flags.DEFINE_integer('caps1_output', 32, 'number of capsules in the first capsule layer')
+flags.DEFINE_integer('caps1_output', 16, 'number of capsules in the first capsule layer')
 flags.DEFINE_integer('caps1_len', 8, 'kernel size for first capsule layer')
 flags.DEFINE_string('caps1_type', 'CONV', 'type of capsule layer [\'CONV\', \'FC\']')
 flags.DEFINE_boolean('caps1_routing', False, 'boolean to use routing or not')
-flags.DEFINE_integer('caps1_kernel', 3, 'kernel size (ONLY FOR CONV TYPE)')
+flags.DEFINE_integer('caps1_kernel', 2, 'kernel size (ONLY FOR CONV TYPE)')
 flags.DEFINE_integer('caps1_stride', 1, 'stride (ONLY FOR CONV TYPE)')
 
 # second capsule layer (output)
 flags.DEFINE_integer('caps2_output', 2, 'number of capsules in the second capsule layer')
-flags.DEFINE_integer('caps2_len', 16, 'kernel size for second capsule layer')
+flags.DEFINE_integer('caps2_len', 4, 'kernel size for second capsule layer')
 flags.DEFINE_string('caps2_type', 'FC', 'type of capsule layer [\'CONV\', \'FC\']')
 flags.DEFINE_boolean('caps2_routing', True, 'boolean to use routing or not')
 #----------------------------------------------------------------------------------------//
