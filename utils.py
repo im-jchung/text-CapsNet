@@ -1,4 +1,5 @@
 import os
+import pandas
 import datetime
 import numpy as np
 import tensorflow as tf
@@ -36,9 +37,95 @@ def load_imdb(batch_size, words, length, is_training=True):
 		num_te_batch = 25000 // batch_size
 		return X_test, y_test, num_te_batch
 
+
+def load_ag(batch_size, length, is_training=True):
+	train_df = pandas.read_csv('./data/ag_news_csv/train.csv', header=None)
+	test_df = pandas.read_csv('./data/ag_news_csv/test.csv', header=None)
+
+	text = train_df.loc[:,1:][1] + train_df.loc[:,1:][2]
+	text = list(text)
+	text.append((test_df.loc[:,1:][1] + test_df.loc[:,1:][2]))
+
+	text = [i.replace('\\', ' ') for i in text]
+	text = [i.replace(')', ' ') for i in text]
+	text = [i.replace('(', ' ') for i in text]
+
+	vocab = make_dict(text)
+
+	if is_training:
+		x_train = train_df.loc[:,1:]
+		x_train = x_train[1] + x_train[2]
+		x_train = [i.replace('\\', ' ') for i in x_train]
+		x_train = [i.replace('(', ' ') for i in x_train]
+		x_train = [i.replace(')', ' ') for i in x_train]
+
+		for i in range(len(x_train)):
+			x_train[i] = str2idx(x_train[i], vocab)
+
+		x_train = sequence.pad_sequences(x_train, maxlen=length)
+
+		y_train = [i-1 for i in train_df[0]]
+		y_train = to_categorical(y_train)
+
+		trX = x_train[:108000]
+		trY = y_train[:108000]
+
+		valX = x_train[108000:,]
+		valY = y_train[108000:]
+
+		num_tr_batch = 108000 // batch_size
+		num_val_batch = 12000 // batch_size
+
+		return trX, trY, num_tr_batch, valX, valY, num_val_batch
+
+	else:
+		x_test = test_df.loc[:,1:]
+		x_test = x_test[1] + x_test[2]
+		x_test = [i.replace('\\', ' ') for i in x_test]
+		x_test = [i.replace('(', ' ') for i in x_test]
+		x_test = [i.replace(')', ' ') for i in x_test]
+
+		for i in range(len(x_test)):
+			x_test[i] = str2idx(x_test[i], vocab)
+
+		x_test = sequence.pad_sequences(x_test, maxlen=length)
+
+		y_test = [i-1 for i in test_df[0]]
+		y_test = to_categorical(y_test)
+
+		num_te_batch = 7600 // batch_size
+
+		return x_test, y_test, num_te_batch
+
+
+def make_dict(text):
+	vocab = {}
+	i = 1
+	for phrase in text:
+		blurb = ''.join(c for c in phrase if c not in ['(',')'])
+		blurb = ''.join(blurb)
+		blurb = blurb.split()
+		for word in blurb:
+			if word not in vocab:
+				vocab[word] = i
+				i += 1
+
+	return vocab
+
+
+def str2idx(phrase, vocab):
+	words = phrase.split()
+	indexed_phrase = []
+	for word in words:
+		indexed_phrase.append(vocab[word])
+	return indexed_phrase
+
+
 def get_batch_dataset(dataset, batch_size, words, length, num_threads):
 	if dataset == 'imdb':
 		trX, trY, num_tr_batch, valX, valY, num_val_batch = load_imdb(batch_size, words, length, is_training=True)
+	elif dataset == 'ag':
+		trX, trY, num_tr_batch, valX, valY, num_val_batch = load_ag(batch_size, length, is_training=True)
 	data_queues = tf.train.slice_input_producer([trX, trY])
 	X, Y = tf.train.shuffle_batch(data_queues, num_threads=num_threads,
 								  batch_size=batch_size,
