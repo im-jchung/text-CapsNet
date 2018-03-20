@@ -4,6 +4,7 @@ import numpy as np
 import tensorflow as tf
 
 from config import cfg
+from keras.utils import to_categorical
 from keras.datasets import imdb
 from keras.preprocessing import sequence
 
@@ -13,23 +14,10 @@ def load_imdb(batch_size, words, length, is_training=True):
 	X_train = sequence.pad_sequences(X_train, maxlen=length)
 	X_test = sequence.pad_sequences(X_test, maxlen=length)
 
-	y_train_ohe = []
-	y_test_ohe = []
-
-	for i in y_train:
-		if i == 0:
-			y_train_ohe.append([1,0])
-		else:
-			y_train_ohe.append([0,1])
+	y_train_ohe = to_categorical(y_train)
+	y_test_ohe = to_categorical(y_test)
 
 	y_train = y_train_ohe
-
-	for i in y_test:
-		if i == 0:
-			y_test_ohe.append([1,0])
-		else:
-			y_test_ohe.append([0,1])
-
 	y_test = y_test_ohe
 
 	if is_training:
