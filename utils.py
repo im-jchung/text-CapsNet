@@ -41,36 +41,6 @@ def load_imdb(batch_size, words, length, is_training=True):
 
 		num_tr_batch = 22500 // batch_size
 		num_val_batch = 2500 // batch_size
-		
-		#====================================
-		'''
-		zeros = 0
-		ones = 0
-		indices = []
-
-		for i in range(len(trY)):
-			if trY[i] == 0 and zeros < 50:
-				zeros += 1
-				indices.append(i)
-			elif trY[i] == 1 and ones < 50:
-				ones += 1
-				indices.append(i)
-			elif zeros == 49 and ones == 49:
-				break
-
-		trX = [trX[i] for i in indices]
-		trY = [trY[i] for i in indices]
-
-		trX = np.asarray(trX)
-		trY = np.asarray(trY)
-
-		valX = trX
-		valY = trY
-
-		num_tr_batch = 100 // batch_size
-		num_val_batch = 100 // batch_size
-		'''
-		#====================================
 
 		return trX, trY, num_tr_batch, valX, valY, num_val_batch
 
