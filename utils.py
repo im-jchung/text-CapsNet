@@ -38,6 +38,7 @@ def load_imdb(batch_size, words, length, is_training=True):
 		return X_test, y_test, num_te_batch
 
 
+# Unoptimized, just needed it to work for now
 def load_ag(batch_size, length, is_training=True):
 	train_df = pandas.read_csv('./data/ag_news_csv/train.csv', header=None)
 	test_df = pandas.read_csv('./data/ag_news_csv/test.csv', header=None)
@@ -117,7 +118,10 @@ def str2idx(phrase, vocab):
 	words = phrase.split()
 	indexed_phrase = []
 	for word in words:
-		indexed_phrase.append(vocab[word])
+		try:
+			indexed_phrase.append(vocab[word])
+		except KeyError:
+			indexed_phrase.append(0)
 	return indexed_phrase
 
 
@@ -135,6 +139,7 @@ def get_batch_dataset(dataset, batch_size, words, length, num_threads):
 	return X,Y
 
 
+# Used to record model architectures to keep an easy record, not meant to be useful in any other way
 def record(loss, acc, test_acc):
 	archs = cfg.results + '/archs.txt'
 	if not os.path.exists(cfg.results):

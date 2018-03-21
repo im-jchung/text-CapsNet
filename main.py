@@ -50,7 +50,9 @@ def save_to():
 def train(model, supervisor):
 	losses = []
 	accs = []
+	steps = []
 	val_accs = []
+	val_steps = []
 
 	if cfg.dataset == 'imdb':
 		trX, trY, num_tr_batch, valX, valY, num_val_batch = load_imdb(cfg.batch_size, cfg.words, cfg.length, is_training=True)
@@ -81,9 +83,10 @@ def train(model, supervisor):
 
 					losses.append(loss)
 					accs.append(train_acc)
+					steps.append(global_step)
 
 					#======================================
-					print(loss, train_acc)
+					print('loss: {:.4g}, train_acc: {:.4g}'.format(loss, train_acc))
 					#======================================
 					#v_j= sess.run(model.v_j)
 					#print(v_j)
@@ -110,7 +113,9 @@ def train(model, supervisor):
 					val_acc = val_acc / num_val_batch
 					f_val_acc.write(str(global_step) + ',' + str(val_acc) + '\n')
 					f_val_acc.flush()
+
 					val_accs.append(val_acc)
+					val_steps.append(global_step)
 
 			if (epoch + 1) % cfg.save_freq == 0:
 				supervisor.saver.save(sess, cfg.logdir + '/model_epoch_{0:.4g}_step_{1:.2g}'.format(epoch, global_step))
@@ -119,9 +124,17 @@ def train(model, supervisor):
 
 
 		f, (ax1, ax2) = plt.subplots(1, 2, sharey=False)
-		ax1.plot(losses)
-		ax2.plot(val_accs, color='b')
-		ax2.plot(accs, color='r')
+		ax1.set_title('Loss')
+		ax1.plot(steps, losses)
+		ax1.set_xlabel('Global step')
+		ax1.set_ylabel('Loss')
+
+		ax2.set_title('Accuracy')
+		ax2.plot(val_steps, val_accs, color='b', label='val_accs')
+		ax2.plot(steps, accs, color='r', label='train_accs')
+		ax2.set_xlabel('Global step')
+		ax2.set_ylabel('Accuracy')
+		ax2.legend(loc='lower right')
 		plt.show()
 
 		f_loss.close()
