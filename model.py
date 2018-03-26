@@ -19,7 +19,7 @@ class CapsNet(object):
 				self.summary_()
 
 				self.global_step = tf.Variable(0, name='global_step', trainable=False)
-				self.optimizer = tf.train.AdamOptimizer(learning_rate=0.001)
+				self.optimizer = tf.train.AdamOptimizer(learning_rate=0.0005)
 				self.train_op = self.optimizer.minimize(self.total_loss, global_step=self.global_step)
 			else:
 				self.X = tf.placeholder(tf.float32, shape=(cfg.batch_size, cfg.length))
@@ -45,13 +45,8 @@ class CapsNet(object):
 
 		#========================================
 
-		with tf.variable_scope('Masking'):
-			self.v_j = tf.sqrt(tf.reduce_sum(tf.square(self.caps2), axis=2, keep_dims=True) + epsilon) # Avoid sqrt(0), we want some kind of length
-
-			#self.argmax_idx = tf.to_int32(tf.argmax(self.v_j, axis=1))
-			#self.argmax_idx = tf.reshape(self.argmax_idx, shape=(cfg.batch_size, ))
-
-			#self.v_j = tf.sqrt(tf.reduce_sum(tf.square(self.caps2), axis=2, keep_dims=True) + epsilon)
+		with tf.variable_scope('Out'):
+			self.v_j = tf.sqrt(tf.reduce_sum(tf.square(self.caps2), axis=2, keep_dims=True) + epsilon)
 
 		#========================================
 
@@ -65,18 +60,21 @@ class CapsNet(object):
 		#L_k = tf.reduce_sum(self.v_j, axis=[1,2,3])
 		logits = tf.squeeze(self.v_j)
 		self.Y = tf.cast(self.Y, tf.float32)
-		#self.total_loss = tf.nn.sigmoid_cross_entropy_with_logits(logits=logits, labels=self.Y)
-		self.total_loss = tf.losses.softmax_cross_entropy(onehot_labels=self.Y, logits=logits)
+		self.total_loss = tf.nn.sigmoid_cross_entropy_with_logits(logits=logits, labels=self.Y)
+		#self.total_loss = tf.losses.softmax_cross_entropy(onehot_labels=self.Y, logits=logits)
 		self.total_loss = tf.reduce_mean(self.total_loss)
 
 	def summary_(self):
-		#train_summary = []
-		#train_summary.append(tf.summary.scalar('train/total_loss', self.total_loss))
-		#self.train_summary = tf.summary.merge(train_summary)
+		train_summary = []
+		train_summary.append(tf.summary.scalar('train/total_loss', self.total_loss))
+
+		img = tf.reshape(self.caps2, shape=(cfg.batch_size, 4, 16, 1))
+		train_summary.append(tf.summary.image('image', img))
+		self.train_summary = tf.summary.merge(train_summary)
+
 
 		preds = tf.round(tf.squeeze(self.v_j))
 		preds = tf.cast(preds, tf.int32)
 
 		correct_prediction = tf.equal(tf.to_int32(self.Y), preds)
-
 		self.accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))

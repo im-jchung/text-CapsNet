@@ -79,21 +79,21 @@ def train(model, supervisor):
 				global_step = epoch * num_tr_batch + step
 
 				if global_step % cfg.train_sum_freq == 0:
-					_, loss, train_acc = sess.run([model.train_op, model.total_loss, model.accuracy])
+					_, loss, train_acc, summaries = sess.run([model.train_op, model.total_loss, model.accuracy, model.train_summary])
 
 					losses.append(loss)
 					accs.append(train_acc)
 					steps.append(global_step)
 
 					#======================================
-					print('loss: {:.4g}, train_acc: {:.4g}'.format(loss, train_acc))
+					print(' loss: {:.4g}, train_acc: {:.4g}'.format(loss, train_acc))
 					#======================================
 					#v_j= sess.run(model.v_j)
 					#print(v_j)
 					#======================================
 					assert not np.isnan(loss), 'loss is nan...'
 					# Need to add summary strings
-					#supervisor.summary_writer.add_summary(summary_str, global_step)
+					supervisor.summary_writer.add_summary(summaries, global_step)
 
 					f_loss.write(str(global_step) + ',' + str(loss) + '\n')
 					f_loss.flush()
@@ -117,11 +117,11 @@ def train(model, supervisor):
 					val_accs.append(val_acc)
 					val_steps.append(global_step)
 
-			if (epoch + 1) % cfg.save_freq == 0:
+			if (epoch + 1) % cfg.save_freq == 0 and cfg.save:
 				supervisor.saver.save(sess, cfg.logdir + '/model_epoch_{0:.4g}_step_{1:.2g}'.format(epoch, global_step))
 
-		supervisor.saver.save(sess, cfg.logdir + '/model_epoch_{0:.4g}_step_{1:.2g}'.format(epoch, global_step))
-
+		if cfg.save:
+			supervisor.saver.save(sess, cfg.logdir + '/model_epoch_{0:.4g}_step_{1:.2g}'.format(epoch, global_step))
 
 		f, (ax1, ax2) = plt.subplots(1, 2, sharey=False)
 		ax1.set_title('Loss')
@@ -187,8 +187,10 @@ def main(_):
 		tf.logging.info('Start is_training...')
 		loss, acc = train(model, sv)
 		tf.logging.info('Training done')
-		test_acc = evaluation(model, sv)
-		record(loss, acc, test_acc)
+		
+		if cfg.save:
+			test_acc = evaluation(model, sv)
+			record(loss, acc, test_acc)
 
 
 if __name__ == '__main__':
