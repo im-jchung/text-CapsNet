@@ -85,14 +85,7 @@ def train(model, supervisor):
 					accs.append(train_acc)
 					steps.append(global_step)
 
-					#======================================
-					print(' loss: {:.4g}, train_acc: {:.4g}'.format(loss, train_acc))
-					#======================================
-					#v_j= sess.run(model.v_j)
-					#print(v_j)
-					#======================================
 					assert not np.isnan(loss), 'loss is nan...'
-					# Need to add summary strings
 					supervisor.summary_writer.add_summary(summaries, global_step)
 
 					f_loss.write(str(global_step) + ',' + str(loss) + '\n')
