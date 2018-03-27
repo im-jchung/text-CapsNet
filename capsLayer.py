@@ -6,18 +6,6 @@ from config import cfg
 epsilon = 1e-9
 
 class CapsLayer():
-	''' Capsule layer.
-	Args:
-		input: A 4-D tensor
-		num_outputs: the number of capsules in this layer
-		vec_len: integer, the length of the output vector of a capsule
-		layer_type: string, one of 'FC', or 'CONV', the type of this layer
-		with_routing: boolean, this capsule is routing with the 
-					  lower-level layer capsule
-
-	Returns:
-		A 4-D tensor
-	'''
 
 	def __init__(self, num_outputs, vec_len, layer_type='FC', with_routing=True):
 		self.num_outputs = num_outputs
@@ -55,22 +43,9 @@ class CapsLayer():
 
 			return capsules
 
+
 def routing(input, b_IJ):
-	''' Routing algorithm
-	Args:
-		input: Tensor wish shape [batch_size, num_caps_l=1152, 1, length(u_i)=8, 1],
-			   num_caps_l meaning number of capsules in layer l
-
-	Returns:
-		Tensor of shape [batch_size, num_caps_l_plus_1, length(v_j)=16, 1] represents vector
-		output 'v_j' in layer l+1
-
-	Notes:
-		u_i represents vector output of capsule i in layer l
-		v_j represents vector output of capsule j in layer l+1
-	'''
-
-	W = tf.get_variable('Weight', shape=(1,7952,4,8,16), dtype=tf.float32,     # * **
+	W = tf.get_variable('Weight', shape=(1,2304,4,16,16), dtype=tf.float32,     # * **
 						initializer=tf.random_normal_initializer(stddev=cfg.stddev))
 	biases = tf.get_variable('bias', shape=(1,1,1,16,1))
 
@@ -96,7 +71,7 @@ def routing(input, b_IJ):
 				s_J = tf.reduce_sum(s_J, axis=1, keep_dims=True) + biases
 				v_J = squash(s_J)
 
-				v_J_tiled = tf.tile(v_J, [1,7952,1,1,1])   #*
+				v_J_tiled = tf.tile(v_J, [1,2304,1,1,1])   #*
 				u_produce_v = tf.matmul(u_hat_stopped, v_J_tiled, transpose_a=True)
 
 				b_IJ += u_produce_v
@@ -105,16 +80,7 @@ def routing(input, b_IJ):
 
 
 def squash(x):
-	''' Squash function
-	Args:
-		x: Tensor with shape [batch_size, 1, num_caps, vec_len, 1] or [batch_size, num_caps, vec_len, 1]
-
-	Returns:
-		Tensor with same shape as x but squashed in 'vec_len' dimension
-	'''
 	squared_norm = tf.reduce_sum(tf.square(x), -2, keep_dims=True)
-
-	# Add epsilon to avoid divide by zero
 	scale = squared_norm / (1 + squared_norm) / tf.sqrt(squared_norm + epsilon)
 	v = scale * x
 	return v

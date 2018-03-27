@@ -19,7 +19,7 @@ class CapsNet(object):
 				self.summary_()
 
 				self.global_step = tf.Variable(0, name='global_step', trainable=False)
-				self.optimizer = tf.train.AdamOptimizer(learning_rate=0.0005)
+				self.optimizer = tf.train.AdamOptimizer(learning_rate=0.0008)
 				self.train_op = self.optimizer.minimize(self.total_loss, global_step=self.global_step)
 			else:
 				self.X = tf.placeholder(tf.float32, shape=(cfg.batch_size, cfg.length))
@@ -50,14 +50,7 @@ class CapsNet(object):
 
 		#========================================
 
-		# Add layers as needed
-
-		# Decoder network? IDK how we can do this for linguistics
-
 	def loss(self):
-		# We can use binary cross entropy, I believe
-		# p * -tf.log(q) + (1 - p) * -tf.log(1 - q)
-		#L_k = tf.reduce_sum(self.v_j, axis=[1,2,3])
 		logits = tf.squeeze(self.v_j)
 		self.Y = tf.cast(self.Y, tf.float32)
 		self.total_loss = tf.nn.sigmoid_cross_entropy_with_logits(logits=logits, labels=self.Y)
@@ -67,14 +60,14 @@ class CapsNet(object):
 	def summary_(self):
 		train_summary = []
 		train_summary.append(tf.summary.scalar('train/total_loss', self.total_loss))
-
-		img = tf.reshape(self.caps2, shape=(cfg.batch_size, 4, 16, 1))
-		train_summary.append(tf.summary.image('image', img))
-		self.train_summary = tf.summary.merge(train_summary)
-
+		caps2_weights = tf.reshape(self.caps2, shape=(cfg.batch_size, 4, 16, 1))
+		train_summary.append(tf.summary.image('image', caps2_weights))
 
 		preds = tf.round(tf.squeeze(self.v_j))
 		preds = tf.cast(preds, tf.int32)
-
 		correct_prediction = tf.equal(tf.to_int32(self.Y), preds)
 		self.accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+
+		train_summary.append(tf.summary.scalar('accuracy', self.accuracy))
+
+		self.train_summary = tf.summary.merge(train_summary)
