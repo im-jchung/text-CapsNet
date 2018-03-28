@@ -19,7 +19,7 @@ class CapsNet(object):
 				self.summary_()
 
 				self.global_step = tf.Variable(0, name='global_step', trainable=False)
-				self.optimizer = tf.train.AdamOptimizer(learning_rate=0.0008)
+				self.optimizer = tf.train.AdamOptimizer(learning_rate=0.003) #0.003
 				self.train_op = self.optimizer.minimize(self.total_loss, global_step=self.global_step)
 			else:
 				self.X = tf.placeholder(tf.float32, shape=(cfg.batch_size, cfg.length))
@@ -30,7 +30,7 @@ class CapsNet(object):
 
 	def build_arch(self):
 		with tf.variable_scope('Embedding'):
-			embed = tf.contrib.layers.embed_sequence(self.X, vocab_size=cfg.words, embed_dim=cfg.embed_dim)
+			embed = tf.contrib.layers.embed_sequence(self.X, vocab_size=251969, embed_dim=cfg.embed_dim)
 
 		with tf.variable_scope('Conv1_layer'):
 			conv1 = tf.layers.conv1d(embed, filters=cfg.conv1_filters, kernel_size=cfg.conv1_kernel, strides=cfg.conv1_stride, padding=cfg.conv1_padding)
@@ -51,10 +51,10 @@ class CapsNet(object):
 		#========================================
 
 	def loss(self):
-		logits = tf.squeeze(self.v_j)
+		self.logits = tf.squeeze(self.v_j)
 		self.Y = tf.cast(self.Y, tf.float32)
-		self.total_loss = tf.nn.sigmoid_cross_entropy_with_logits(logits=logits, labels=self.Y)
-		#self.total_loss = tf.losses.softmax_cross_entropy(onehot_labels=self.Y, logits=logits)
+		self.total_loss = tf.nn.sigmoid_cross_entropy_with_logits(logits=self.logits, labels=self.Y)
+		#self.total_loss = tf.losses.softmax_cross_entropy(onehot_labels=self.Y, logits=self.logits)
 		self.total_loss = tf.reduce_mean(self.total_loss)
 
 	def summary_(self):
@@ -63,9 +63,14 @@ class CapsNet(object):
 		caps2_weights = tf.reshape(self.caps2, shape=(cfg.batch_size, 4, 16, 1))
 		train_summary.append(tf.summary.image('image', caps2_weights))
 
-		preds = tf.round(tf.squeeze(self.v_j))
+		#preds = tf.round(tf.squeeze(self.v_j))
+		preds = tf.argmax(tf.squeeze(self.v_j), axis=1)
 		preds = tf.cast(preds, tf.int32)
-		correct_prediction = tf.equal(tf.to_int32(self.Y), preds)
+
+		# Get label from Y
+		self.labels = tf.argmax(self.Y, axis=1)
+
+		correct_prediction = tf.equal(tf.to_int32(self.labels), preds)
 		self.accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
 		train_summary.append(tf.summary.scalar('accuracy', self.accuracy))

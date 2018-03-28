@@ -166,6 +166,17 @@ def evaluation(model, supervisor):
 	return test_acc
 
 
+def test(model, supervisor):
+	teX, teY, num_te_batch = load_ag(cfg.batch_size, cfg.length, is_training=False)
+	teX = teX[0:64]
+	teY = teY[0:64]
+
+	with supervisor.managed_session(config=tf.ConfigProto(allow_soft_placement=True)) as sess:
+		supervisor.saver.restore(sess, tf.train.latest_checkpoint(cfg.logdir))
+
+		out, acc = sess.run([model.logits, model.accuracy], {model.X: teX, model.Y: teY})
+		print(np.argmax(out, axis=1), acc, '%')
+
 def main(_):
 	tf.logging.info('Loading Graph...')
 	model = CapsNet()
@@ -174,7 +185,8 @@ def main(_):
 	sv = tf.train.Supervisor(graph=model.graph, logdir=cfg.logdir, save_model_secs=0)
 
 	if not cfg.is_training:
-		_ = evaluation(model, sv)
+		#_ = evaluation(model, sv)
+		_ = test(model, sv)
 
 	else:
 		tf.logging.info('Start is_training...')

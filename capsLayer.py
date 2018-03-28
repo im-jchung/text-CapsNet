@@ -45,7 +45,7 @@ class CapsLayer():
 
 
 def routing(input, b_IJ):
-	W = tf.get_variable('Weight', shape=(1,2304,4,16,16), dtype=tf.float32,     # * **
+	W = tf.get_variable('Weight', shape=(1,1152,4,8,16), dtype=tf.float32,     # * **
 						initializer=tf.random_normal_initializer(stddev=cfg.stddev))
 	biases = tf.get_variable('bias', shape=(1,1,1,16,1))
 
@@ -71,7 +71,7 @@ def routing(input, b_IJ):
 				s_J = tf.reduce_sum(s_J, axis=1, keep_dims=True) + biases
 				v_J = squash(s_J)
 
-				v_J_tiled = tf.tile(v_J, [1,2304,1,1,1])   #*
+				v_J_tiled = tf.tile(v_J, [1,1152,1,1,1])   #*
 				u_produce_v = tf.matmul(u_hat_stopped, v_J_tiled, transpose_a=True)
 
 				b_IJ += u_produce_v

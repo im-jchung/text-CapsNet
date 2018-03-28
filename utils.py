@@ -45,7 +45,7 @@ def load_ag(batch_size, length, is_training=True):
 
 	text = train_df.loc[:,1:][1] + train_df.loc[:,1:][2]
 	text = list(text)
-	text.append((test_df.loc[:,1:][1] + test_df.loc[:,1:][2]))
+	text.extend(test_df.loc[:,1:][1] + test_df.loc[:,1:][2])
 
 	text = [i.replace('\\', ' ') for i in text]
 	text = [i.replace(')', ' ') for i in text]
@@ -99,6 +99,7 @@ def load_ag(batch_size, length, is_training=True):
 		return x_test, y_test, num_te_batch
 
 
+#--- Word level embedding --------------/
 def make_dict(text):
 	vocab = {}
 	i = 1
@@ -110,9 +111,23 @@ def make_dict(text):
 			if word not in vocab:
 				vocab[word] = i
 				i += 1
-
+	#print(len(vocab))
 	return vocab
 
+'''
+#--- Character level embedding ---------/
+def make_dict(text):
+	vocab = {}
+	i = 1
+	for phrase in text:
+		for letter in phrase:
+			#print(letter, i)
+			if letter not in vocab:
+				vocab[letter] = i
+				i += 1
+
+	return vocab
+'''
 
 def str2idx(phrase, vocab):
 	words = phrase.split()
@@ -123,6 +138,18 @@ def str2idx(phrase, vocab):
 		except KeyError:
 			indexed_phrase.append(0)
 	return indexed_phrase
+
+'''
+def str2idx(phrase, vocab):
+	indexed_phrase = []
+	for letter in phrase:
+		try:
+			indexed_phrase.append(vocab[letter])
+		except KeyError:
+			indexed_phrase.append(0)
+
+	return indexed_phrase
+'''
 
 
 def get_batch_dataset(dataset, batch_size, words, length, num_threads):
