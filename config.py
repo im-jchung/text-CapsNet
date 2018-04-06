@@ -11,7 +11,7 @@ flags.DEFINE_integer('iter_routing', 3, 'number of iterations in routing algorit
 flags.DEFINE_float('stddev', 0.01, 'stddev for W initializer')
 
 # environment
-flags.DEFINE_string('dataset', 'imdb', 'the name of dataset')
+flags.DEFINE_string('dataset', 'ag', 'the name of dataset')
 flags.DEFINE_boolean('is_training', True, 'train or predict phase')
 flags.DEFINE_integer('num_threads', 8, 'number of threads of enqueing examples')
 flags.DEFINE_string('logdir', 'logdir', 'logs directory')

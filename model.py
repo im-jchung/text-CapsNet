@@ -1,4 +1,5 @@
 import tensorflow as tf
+from tensorflow.contrib import rnn
 
 from utils import get_batch_dataset
 from capsLayer import CapsLayer
@@ -40,8 +41,20 @@ class CapsNet(object):
 			caps1 = firstCaps(conv1, kernel_size=cfg.caps1_kernel, stride=cfg.caps1_stride)
 
 		with tf.variable_scope('Second_caps_layer'):
-			secondCaps = CapsLayer(num_outputs=cfg.caps2_output, vec_len=cfg.caps2_len, layer_type=cfg.caps2_type, with_routing=cfg.caps2_routing)
-			self.caps2 = secondCaps(caps1, kernel_size=None, stride=None)
+			secondCaps = CapsLayer(num_outputs=cfg.caps2_output, vec_len=cfg.caps2_len, layer_type='FC', with_routing=cfg.caps2_routing)
+			self.caps2 = secondCaps(caps1, kernel_size=3, stride=1)
+
+
+
+		with tf.variable_scope('LSTM_layer'):
+			caps2_reshape = tf.reshape(self.caps2, [cfg.batch_size, 4, -1])
+			caps2_unstack = tf.unstack(caps2_reshape, 4, 1)
+			W = tf.Variable(tf.random_normal([32, 4]))
+			b = tf.Variable(tf.random_normal([4]))
+			lstm_layer = rnn.BasicLSTMCell(32, forget_bias=1)
+			outputs, _ = rnn.static_rnn(lstm_layer, caps2_unstack, dtype='float32')
+			self.prediction = tf.matmul(outputs[-1], W) + b
+
 
 		#========================================
 
@@ -53,7 +66,7 @@ class CapsNet(object):
 	def loss(self):
 		self.logits = tf.squeeze(self.v_j)
 		self.Y = tf.cast(self.Y, tf.float32)
-		self.total_loss = tf.nn.sigmoid_cross_entropy_with_logits(logits=self.logits, labels=self.Y)
+		self.total_loss = tf.nn.sigmoid_cross_entropy_with_logits(logits=self.prediction, labels=self.Y)
 		#self.total_loss = tf.losses.softmax_cross_entropy(onehot_labels=self.Y, logits=self.logits)
 		self.total_loss = tf.reduce_mean(self.total_loss)
 
@@ -63,14 +76,16 @@ class CapsNet(object):
 		caps2_weights = tf.reshape(self.caps2, shape=(cfg.batch_size, 4, 16, 1))
 		train_summary.append(tf.summary.image('image', caps2_weights))
 
-		#preds = tf.round(tf.squeeze(self.v_j))
-		preds = tf.argmax(tf.squeeze(self.v_j), axis=1)
-		preds = tf.cast(preds, tf.int32)
+		#preds = tf.round(tf.squeeze(self.v_j)) XX
+		#preds = tf.argmax(tf.squeeze(self.v_j), axis=1)
+		#preds = tf.cast(preds, tf.int32)
+
+		preds = tf.argmax(self.prediction, axis=1)
 
 		# Get label from Y
 		self.labels = tf.argmax(self.Y, axis=1)
 
-		correct_prediction = tf.equal(tf.to_int32(self.labels), preds)
+		correct_prediction = tf.equal(tf.to_int32(self.labels), tf.to_int32(preds))
 		self.accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
 		train_summary.append(tf.summary.scalar('accuracy', self.accuracy))
